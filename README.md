@@ -12,7 +12,7 @@ curriculum — delivered as three segments of roughly seven minutes each.
 | **Author** | Dylan Ferraro |
 | **Course** | CSC6221 |
 | **Deliverable** | recorded presentation + slide deck |
-| **Artifacts** | [SAA BLA #1.pptx](https://github.com/user-attachments/files/31872508/SAA.BLA.1.pptx) | https://youtu.be/-s1q6jQ4L5I | https://youtu.be/otOu44auqlw | https://youtu.be/0LScel67CSU |
+| **Artifacts** | [SAA BLA #1.pptx](https://github.com/user-attachments/files/31872508/SAA.BLA.1.pptx) | https://github.com/user-attachments/assets/d1f8f6f3-971f-4cda-91d4-4a8be0939afa |
 
 ---
 
