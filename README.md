@@ -93,8 +93,7 @@ problems rather than as vocabulary.
 | **Protocols & standards** | HTTPS/TLS, REST, WebSocket, JMS, AMQP, MQTT, STOMP, OpenWire, SAML |
 | **Data formats** | JSON, CSV, Parquet, Avro, DynamoDB JSON, ION |
 | **SDKs & libraries** | AWS SDK, Kinesis Producer Library (KPL), Kinesis Client Library (KCL) |
-| **API tooling** | OpenAPI / Swagger |
-| **Deck generation** | Python 3 + `python-pptx` |
+
 
 ---
 
@@ -215,14 +214,6 @@ segment at a time, with the segment divider slides as natural cut points, made r
 cheap and the final result noticeably more composed.
 
 
-## Presentation Structure
-
-| Segment | Focus | Slides | Target |
-|---|---|---|---|
-| **1** | Theoretical & conceptual foundations | 3–11 | ~6:00 |
-| **2** | Practical use & implementation | 12–23 | ~8:00 |
-| **3** | Applications, tools, troubleshooting & security | 24–33 | ~7:30 |
-| | | | **~22:30** |
 
 ## References
 
