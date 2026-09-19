@@ -4,7 +4,7 @@ A three-part recorded walkthrough of the networking domain of the
 **AWS Certified Solutions Architect – Associate (SAA-C03)** certification path.
 
 **Author:** Dylan Ferraro
-**Course:** *[course code / name]*
+**Course:** CSC6221
 **Format:** Three videos, 5–8 minutes each (~23 minutes total)
 
 ---
@@ -13,11 +13,9 @@ A three-part recorded walkthrough of the networking domain of the
 
 | # | Title | Runtime | Link |
 |---|---|---|---|
-| 1 | The Address Model | ~6:53 | *[paste link]* |
-| 2 | Connectivity: In, Out, and Across | ~7:28 | *[paste link]* |
-| 3 | Hybrid Connections, Security & Troubleshooting | ~7:58 | *[paste link]* |
-
-*Playlist: [paste link]*
+| 1 | The Address Model | ~6:53 | https://youtu.be/AxeptXOXX4s |
+| 2 | Connectivity: In, Out, and Across | ~7:28 | https://youtu.be/DFeHaoQUI6g |
+| 3 | Hybrid Connections, Security & Troubleshooting | ~7:58 | https://youtu.be/p0Dq_ppVxB8 |
 
 ---
 
