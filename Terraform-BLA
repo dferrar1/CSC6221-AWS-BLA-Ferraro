@@ -1,0 +1,309 @@
+# Terraform Learnings
+
+My notes, examples, and video walkthroughs from learning Terraform. This repo is organized around a three-part video series covering the core workflow, writing configurations, and managing state.
+
+## Video Series
+
+| # | Video | Topics |
+|---|-------|--------|
+| 1 | [Foundations and the Core Workflow](#) | What Terraform is, benefits, comparison with other tools, `init`, `plan`, `apply`, `destroy`, `validate` |
+| 2 | [Writing Configurations](#) | HCL basics, file structure, provider/resource/data/variable/output/terraform blocks, variable precedence, built-in functions |
+| 3 | [State, Drift, and Workspaces](#) | State file, remote backends and locking, inspecting state, fixing drift, workspaces |
+
+> Replace the `#` links above with your video URLs.
+
+## What Is Terraform?
+
+Terraform is an infrastructure as code (IaC) tool. You describe what your infrastructure should look like in HCL (HashiCorp Configuration Language), and Terraform works out how to build it. This is the **declarative** approach: define the desired end state, not the steps to get there.
+
+**Key benefits**
+
+- Version control and auditability
+- Automation and fewer manual tasks
+- Scalability (scale up or down from code)
+- Team collaboration through pull requests
+- Consistency and repeatability
+- Platform agnostic: the same workflow across clouds and on-prem
+
+## Core Workflow
+
+```
+Write → Init → Plan → Apply
+```
+
+| Command | Purpose |
+|---------|---------|
+| `terraform init` | Set up the working directory: download providers and modules, configure the backend. Re-run when you add or upgrade providers/modules or change the backend. |
+| `terraform validate` | Check syntax and internal consistency. Requires `init` first. Does not contact providers. |
+| `terraform plan` | Preview changes (dry run). |
+| `terraform plan -out=myplan.tfplan` | Save a plan so it can be reviewed and applied exactly as written. |
+| `terraform apply` | Make the changes. |
+| `terraform apply myplan.tfplan` | Apply a saved plan. |
+| `terraform destroy` | Tear down everything Terraform manages. Irreversible. |
+| `terraform destroy -target=<resource>` | Destroy a single resource. Also remove it from config so it is not recreated. |
+
+**Plan symbols**
+
+| Symbol | Meaning |
+|--------|---------|
+| `+` | Create |
+| `~` | Update in place |
+| `-` | Destroy |
+| `-/+` | Destroy and recreate (watch for downtime) |
+
+**Things to remember**
+
+- Always review the plan before applying.
+- There is no automatic rollback. If an apply fails partway, fix the problem and re-run.
+- Use `-auto-approve` carefully, since it skips the final review.
+- Terraform builds a dependency graph from your references, so the order of resources in files does not matter.
+- Operations run in parallel (10 by default). Adjust with `-parallelism` if you hit API rate limits.
+
+## Core Components
+
+- **Core**: the CLI that provisions and manages infrastructure
+- **Providers**: plugins that extend Terraform to specific platforms (AWS, Azure, etc.)
+- **Resources**: the infrastructure components being managed
+- **State**: the record of what Terraform manages
+- **Modules**: reusable, shareable blocks of configuration
+
+**Editions:** Community (CLI), HCP Terraform (SaaS), Terraform Enterprise (self-hosted).
+
+## Terraform vs. Other Tools
+
+- **CloudFormation, Azure Bicep**: similar declarative provisioning tools, but each is tied to one cloud.
+- **Ansible, Chef, Puppet**: configuration management tools. Different from Terraform but complementary. A common pattern is Terraform to build infrastructure and a config tool to set up what runs on it.
+
+## Writing Configurations
+
+### HCL style
+
+- `#` for comments
+- Underscores to separate words in names
+- Two-space indentation per nesting level
+- Align equals signs
+- Run `terraform fmt` to format automatically
+
+### Typical file layout
+
+```
+.
+├── main.tf             # resources
+├── variables.tf        # input variables
+├── outputs.tf          # outputs
+├── providers.tf        # provider configuration
+├── terraform.tfvars    # variable values
+└── .gitignore
+```
+
+Terraform reads every `.tf` file in the directory together, so this is convention, not a requirement.
+
+### Block types
+
+| Block | Purpose |
+|-------|---------|
+| `provider` | Connect Terraform to a platform |
+| `resource` | Infrastructure to create, update, or delete |
+| `data` | Read-only lookup of existing resources |
+| `variable` | Customizable input values |
+| `output` | Expose information after deployment |
+| `terraform` | Required Terraform version, providers, and backend |
+| `module` | Reusable grouped configuration |
+| `import` | Bring existing resources under Terraform management |
+
+### Example
+
+```hcl
+resource "aws_vpc" "vpc" {
+  cidr_block = var.vpc_cidr
+
+  tags = {
+    Name        = var.vpc_name
+    Environment = "demo_environment"
+    Terraform   = "true"
+  }
+}
+```
+
+Reference this resource elsewhere as `aws_vpc.vpc.id`. References create implicit dependencies, so Terraform creates the VPC before anything that depends on it. Use `depends_on` for dependencies Terraform cannot detect on its own.
+
+### Multiple provider configurations
+
+```hcl
+provider "aws" {
+  alias  = "dev"
+  region = "us-east-1"
+}
+
+resource "aws_s3_bucket" "example" {
+  provider = aws.dev
+  # ...
+}
+```
+
+### Data sources
+
+```hcl
+data "aws_vpc" "prd" {
+  filter {
+    name   = "tag:Name"
+    values = ["prd-vpc"]
+  }
+}
+
+resource "aws_subnet" "pub" {
+  vpc_id     = data.aws_vpc.prd.id
+  cidr_block = "10.0.6.0/24"
+}
+```
+
+### Variable types
+
+`string`, `number`, `bool`, `list`, `map`, `set`
+
+- **List**: ordered, accessed by index (`var.networks[0]`)
+- **Map**: values accessed by label
+- **Set**: unique values, unordered, no index access
+
+### Variable precedence (highest to lowest)
+
+1. `-var` command line flag
+2. `*.auto.tfvars` files
+3. `*.tfvars` files
+4. `TF_VAR_` environment variables
+5. `default` in the variable block
+
+> Terraform automatically loads `terraform.tfvars` and `*.auto.tfvars`. Other `.tfvars` files need `-var-file`.
+
+### Version constraints
+
+| Constraint | Meaning |
+|------------|---------|
+| `1.9.8` | Exactly this version |
+| `>= 1.9.8` | This version or newer |
+| `~> 1.11.0` | Stay within 1.11.x (will not move to 1.12) |
+
+### Built-in functions
+
+| Category | Examples |
+|----------|----------|
+| Numeric | `min()`, `max()` |
+| String | `join()`, `split()` |
+| Network | `cidrsubnet()` |
+| Type conversion | `toset()`, `tolist()`, `tomap()`, `tostring()` |
+
+Interpolation syntax: `"${var.env}-${var.name}"`
+
+## State
+
+State tracks the resources Terraform manages and maps your configuration to real infrastructure. Terraform cannot operate without it.
+
+- **Local by default**: `terraform.tfstate` (JSON) in the working directory
+- **Remote backends** (such as S3) are better for teams
+- **Backend config goes in the `terraform` block**, not the provider block. Run `terraform init` after adding or changing it.
+- **Enable state locking** to prevent concurrent changes
+- **State can contain secrets in plain text.** Never commit it to Git, and restrict access to remote storage.
+
+### Inspecting state
+
+| Command | Purpose |
+|---------|---------|
+| `terraform state list` | List all resources in state |
+| `terraform show` | Show attributes of resources in state |
+| `terraform state mv` | Move a resource |
+| `terraform state rm` | Remove a resource from state (does not destroy it) |
+| `terraform state pull` / `push` | Download / upload state |
+
+Back up state before using `mv`, `rm`, or `push`.
+
+### Fixing drift
+
+Drift is when real infrastructure no longer matches your configuration and state, usually from manual changes.
+
+| Option | Command | Choose when |
+|--------|---------|-------------|
+| Revert | `terraform apply` | The change was a mistake or unauthorized. Code is the source of truth. |
+| Accept | `terraform apply -refresh-only` | The change is valid. Reality becomes the source of truth. Update your code to match. |
+
+Preview with `terraform plan -refresh-only`.
+
+## Workspaces
+
+A workspace is a named container for a separate instance of state. Same code, separate state files, no code duplication.
+
+```bash
+terraform workspace list
+terraform workspace new dev
+terraform workspace select dev
+terraform workspace show
+terraform workspace delete dev
+```
+
+On a local backend, each workspace gets its own subdirectory under `terraform.tfstate.d/`.
+
+| Type | Description |
+|------|-------------|
+| **CLI workspaces** | Multiple state files in one configuration, same code and backend |
+| **HCP Terraform workspaces** | A complete working directory in the cloud with its own variables, state, VCS integration, run history, and team collaboration |
+
+> CLI workspaces share one codebase and backend, so they are not strong isolation. For production, many teams use separate directories or accounts.
+
+## Recommended `.gitignore`
+
+```gitignore
+# Local Terraform directory (recreated by terraform init)
+.terraform/
+
+# State files (can contain secrets)
+*.tfstate
+*.tfstate.*
+
+# Variable files that may contain secrets
+*.tfvars
+
+# Crash logs
+crash.log
+```
+
+Commit `.terraform.lock.hcl` so everyone uses the same provider versions.
+
+## Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `TF_LOG=DEBUG` | Enable debug logging |
+| `TF_VAR_<name>` | Set a Terraform variable |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS credentials, kept out of `.tf` files |
+
+## Best Practices
+
+- Avoid hardcoding. Use variables, data sources, and functions.
+- Format with `terraform fmt` and check with `terraform validate`.
+- Review every plan, and test in non-prod first.
+- Pin Terraform and provider versions.
+- Keep credentials in environment variables, not code.
+- Use remote state with locking for teams.
+- Comment your code and document significant changes.
+
+## Getting Started
+
+1. [Install Terraform](https://developer.hashicorp.com/terraform/install)
+2. Clone this repo
+3. Configure credentials for your cloud provider (for example, AWS environment variables)
+4. Run:
+
+```bash
+terraform init
+terraform validate
+terraform plan
+```
+
+## Resources
+
+- [Terraform Documentation](https://developer.hashicorp.com/terraform/docs)
+- [Terraform Registry](https://registry.terraform.io/) (providers and modules)
+- [HCL Style Guide](https://developer.hashicorp.com/terraform/language/style)
+
+## Author
+
+Your Name · [LinkedIn](#) · [YouTube](#)
