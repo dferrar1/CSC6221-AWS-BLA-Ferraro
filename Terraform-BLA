@@ -6,11 +6,9 @@ My notes, examples, and video walkthroughs from learning Terraform. This repo is
 
 | # | Video | Topics |
 |---|-------|--------|
-| 1 | [Foundations and the Core Workflow](#) | What Terraform is, benefits, comparison with other tools, `init`, `plan`, `apply`, `destroy`, `validate` |
-| 2 | [Writing Configurations](#) | HCL basics, file structure, provider/resource/data/variable/output/terraform blocks, variable precedence, built-in functions |
-| 3 | [State, Drift, and Workspaces](#) | State file, remote backends and locking, inspecting state, fixing drift, workspaces |
-
-> Replace the `#` links above with your video URLs.
+| 1 | [Foundations and the Core Workflow](https://youtu.be/NxasIlhY_ow) | What Terraform is, benefits, comparison with other tools, `init`, `plan`, `apply`, `destroy`, `validate` |
+| 2 | [Writing Configurations](https://youtu.be/uF8MPx16QJM) | HCL basics, file structure, provider/resource/data/variable/output/terraform blocks, variable precedence, built-in functions |
+| 3 | [State, Drift, and Workspaces](https://youtu.be/TsictVa5rGI) | State file, remote backends and locking, inspecting state, fixing drift, workspaces |
 
 ## What Is Terraform?
 
